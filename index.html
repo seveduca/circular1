@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Circular N°1 — Lista de Verificación</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f0f2f5;color:#1a2e4a;min-height:100vh;font-size:14px}
+:root{--az:#1a2e4a;--azm:#2d4f7a;--cel:#3b82c4;--vd:#22a06b;--rj:#d94040;--nr:#e8700a;--ac:#e8a020;--gris:#8899aa;--borde:rgba(0,0,0,0.10);--card:#ffffff;--sup:#f4f6f9;--r6:8px;--r10:12px;--sombra:0 2px 14px rgba(26,46,74,0.09)}
+
+/* LOADING */
+.loading-screen{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
+.loading-screen.hidden{display:none}
+.spinner{width:36px;height:36px;border:3px solid #e0e8f0;border-top-color:var(--cel);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;color:var(--gris)}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#eef3fa 0%,#f4f6f9 100%)}
+.login-box{background:var(--card);border:1px solid var(--borde);border-radius:var(--r10);padding:38px 34px;width:100%;max-width:430px;box-shadow:var(--sombra)}
+.login-logo{width:48px;height:48px;background:var(--az);border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:22px}
+.login-box h1{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;text-align:center;margin-bottom:4px;color:var(--az)}
+.login-box p{font-size:12px;color:var(--gris);text-align:center;margin-bottom:26px}
+.login-tabs{display:flex;border:1px solid var(--borde);border-radius:var(--r6);overflow:hidden;margin-bottom:22px}
+.login-tab{flex:1;padding:9px;font-size:12px;font-weight:500;border:none;background:transparent;cursor:pointer;color:var(--gris);transition:all .15s;font-family:'DM Sans',sans-serif}
+.login-tab.on{background:var(--az);color:#fff}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;font-weight:600;color:var(--gris);margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase}
+.field input{width:100%;padding:10px 13px;border:1px solid var(--borde);border-radius:var(--r6);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--sup);color:var(--az);outline:none;transition:border .15s}
+.field input:focus{border-color:var(--cel);background:#fff}
+.btn-pri{width:100%;padding:11px;background:var(--az);color:#fff;border:none;border-radius:var(--r6);font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .2s}
+.btn-pri:hover{background:var(--azm)}
+.btn-pri:disabled{opacity:.5;cursor:not-allowed}
+.msg-err{background:#fff0f0;border:1px solid #fca5a5;border-radius:var(--r6);padding:9px 12px;font-size:12px;color:var(--rj);margin-bottom:14px}
+.msg-ok{background:#f0fdf4;border:1px solid #86efac;border-radius:var(--r6);padding:9px 12px;font-size:12px;color:var(--vd);margin-bottom:14px}
+.login-footer{font-size:11px;color:#c0c8d4;text-align:center;margin-top:18px;line-height:1.6}
+
+/* ADMIN */
+.admin-wrap{min-height:100vh;padding:24px;background:var(--sup)}
+.admin-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.admin-hdr h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;color:var(--az)}
+.admin-hdr p{font-size:12px;color:var(--gris);margin-top:3px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn-sm{padding:7px 15px;border:1px solid var(--borde);border-radius:var(--r6);font-size:12px;cursor:pointer;background:var(--card);font-family:'DM Sans',sans-serif;color:var(--az);transition:all .15s}
+.btn-sm:hover{border-color:var(--cel);color:var(--cel)}
+.btn-sm.danger:hover{border-color:var(--rj);color:var(--rj)}
+.btn-sm.prim{background:var(--az);color:#fff;border-color:var(--az)}
+.btn-sm.prim:hover{background:var(--azm)}
+.keys-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-bottom:26px}
+.key-card{background:var(--card);border:1px solid var(--borde);border-radius:var(--r10);padding:18px;box-shadow:var(--sombra)}
+.key-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px}
+.key-badge{font-size:10px;font-weight:700;letter-spacing:.04em;padding:3px 10px;border-radius:20px;flex-shrink:0}
+.key-badge.activa{background:#d1f2e4;color:#1a7a52}
+.key-badge.inactiva{background:#e0e8f0;color:#6b7f8f}
+.key-nombre{font-size:13px;font-weight:500;color:var(--az)}
+.key-est{font-size:11px;color:var(--gris);margin-top:2px}
+.key-fecha{font-size:10px;color:#b0bcc8;margin-top:2px}
+.key-code{font-family:'Courier New',monospace;font-size:16px;font-weight:700;color:var(--cel);margin:8px 0 4px;letter-spacing:.06em}
+.key-pct-txt{font-size:20px;font-weight:500;margin-bottom:2px}
+.key-progbar{height:5px;background:#e0e8f0;border-radius:3px;overflow:hidden;margin-bottom:10px}
+.key-progfill{height:100%;border-radius:3px}
+.key-actions{display:flex;gap:6px;flex-wrap:wrap}
+.new-key-form{background:var(--card);border:1px solid var(--borde);border-radius:var(--r10);padding:22px;margin-bottom:20px;box-shadow:var(--sombra)}
+.new-key-form h3{font-family:'DM Serif Display',serif;font-size:16px;font-weight:400;margin-bottom:16px;color:var(--az)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.empty-state{text-align:center;padding:52px;color:var(--gris);font-size:13px;line-height:1.7;background:var(--card);border-radius:var(--r10);border:1px solid var(--borde)}
+
+/* APP HEADER */
+.app-header{background:var(--az);padding:15px 30px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:12px}
+.app-header h1{font-family:'DM Serif Display',serif;color:#fff;font-size:15px;font-weight:400;line-height:1.2}
+.app-header p{color:rgba(255,255,255,.45);font-size:10px;margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+.hdr-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.session-badge{background:rgba(255,255,255,.13);color:#fff;font-size:11px;padding:5px 11px;border-radius:20px;font-weight:500;line-height:1.2;text-align:right}
+.session-badge span{display:block;font-size:9px;color:rgba(255,255,255,.45);font-weight:400;margin-top:1px}
+.btn-logout{background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.18);padding:7px 13px;border-radius:var(--r6);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;transition:all .15s}
+.btn-logout:hover{background:rgba(255,255,255,.18);color:#fff}
+.saving-dot{width:7px;height:7px;border-radius:50%;background:var(--vd);opacity:0;transition:opacity .3s;flex-shrink:0}
+.saving-dot.show{opacity:1}
+
+/* BARRA GLOBAL */
+.prog-wrap{background:var(--azm);padding:10px 30px;display:flex;align-items:center;gap:16px}
+.prog-wrap span{color:rgba(255,255,255,.8);font-size:11px;white-space:nowrap;font-weight:500}
+.prog-track{flex:1;height:6px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cel),var(--vd));border-radius:3px;transition:width .4s}
+.prog-pct{color:#fff;font-size:13px;font-weight:600;min-width:38px;text-align:right}
+
+/* LAYOUT */
+.app-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 94px)}
+
+/* SIDEBAR */
+.sidebar{background:var(--card);border-right:1px solid var(--borde);padding:13px 0;position:sticky;top:94px;height:calc(100vh - 94px);overflow-y:auto}
+.sidebar::-webkit-scrollbar{width:3px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--borde);border-radius:2px}
+.sid-lbl{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gris);padding:0 15px 8px}
+.sid-item{display:flex;align-items:center;gap:7px;padding:7px 15px;cursor:pointer;font-size:11px;color:var(--az);border-left:2px solid transparent;transition:all .15s}
+.sid-item:hover{background:var(--sup)}
+.sid-item.on{border-left-color:var(--cel);background:#eef4fb;color:var(--cel);font-weight:500}
+.sid-item.done .sid-pill{background:#d1f2e4;color:var(--vd)}
+.sid-pill{margin-left:auto;font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px;background:var(--sup);color:var(--gris);flex-shrink:0}
+.sid-item.on .sid-pill{background:#d0e8fa;color:var(--cel)}
+.sid-prog{height:2px;background:var(--sup);margin:0 15px 2px 24px;border-radius:1px;overflow:hidden}
+.sid-prog-fill{height:100%;border-radius:1px;transition:width .3s}
+
+/* MAIN */
+.main{padding:24px 30px;overflow-y:auto}
+.nav-tabs{display:flex;gap:2px;margin-bottom:18px;border-bottom:1px solid #e8eef5}
+.nav-tab{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--gris);padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+.nav-tab:hover{color:var(--cel)}
+.nav-tab.on{color:var(--cel);border-bottom-color:var(--cel)}
+
+/* RESUMEN */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--borde);border-radius:var(--r10);padding:14px;text-align:center;box-shadow:var(--sombra)}
+.stat-n{font-size:28px;font-weight:500;line-height:1}
+.stat-l{font-size:10px;color:var(--gris);margin-top:3px}
+.res-card{background:var(--card);border:1px solid var(--borde);border-radius:var(--r10);overflow:hidden;box-shadow:var(--sombra)}
+.res-table{width:100%;border-collapse:collapse;font-size:12px}
+.res-table th{text-align:left;font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gris);padding:8px 12px;border-bottom:1px solid #eef2f7;background:var(--sup)}
+.res-table td{padding:9px 12px;border-bottom:0.5px solid #eef2f7;vertical-align:middle}
+.res-table tbody tr:hover td{background:#fafcff;cursor:pointer}
+.bar-t{height:5px;background:var(--sup);border-radius:3px;overflow:hidden;width:80px}
+.bar-fill{height:100%;border-radius:3px}
+.chip{display:inline-block;padding:2px 9px;border-radius:10px;font-weight:700;font-size:11px}
+
+/* GRÁFICOS */
+.graf-global-card{background:var(--card);border:1px solid var(--borde);border-radius:var(--r10);padding:22px;margin-bottom:18px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;box-shadow:var(--sombra)}
+.donut-big{position:relative;width:130px;height:130px;flex-shrink:0}
+.donut-big svg{position:absolute;top:0;left:0;display:block}
+.donut-lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.d-pct{font-size:1.7rem;font-weight:500;line-height:1}
+.d-sub{font-size:10px;color:var(--gris);margin-top:2px}
+.leyenda-list{display:flex;flex-direction:column;gap:5px}
+.leyenda-row{display:flex;align-items:center;gap:7px;font-size:11px}
+.ley-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.graf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px}
+.graf-card{background:var(--card);border:1px solid var(--borde);border-radius:var(--r10);padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;box-shadow:var(--sombra)}
+.graf-card:hover{transform:translateY(-2px);border-color:var(--cel);box-shadow:0 6px 20px rgba(26,46,74,0.12)}
+.donut-sm{position:relative;width:90px;height:90px;flex-shrink:0}
+.donut-sm svg{position:absolute;top:0;left:0;display:block}
+.donut-sm-lbl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.dsm-pct{font-size:1.05rem;font-weight:500;line-height:1}
+.dsm-n{font-size:10px;color:var(--gris);margin-top:1px}
+.gcard-info{text-align:center;width:100%}
+.gcard-titulo{font-size:11px;font-weight:500;color:var(--az);line-height:1.3;margin-bottom:3px}
+.gcard-chips{display:flex;justify-content:center;gap:4px;margin-top:4px;flex-wrap:wrap}
+.gchip{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600}
+
+/* AREA CARD */
+.area-card{background:var(--card);border:1px solid var(--borde);border-radius:var(--r10);margin-bottom:18px;overflow:hidden;box-shadow:var(--sombra)}
+.area-hdr{padding:16px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eef2f7;background:var(--sup)}
+.area-icon-wrap{display:flex;align-items:center;gap:11px}
+.area-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.area-tit{font-family:'DM Serif Display',serif;font-size:13px;font-weight:400;color:var(--az)}
+.area-sub{font-size:10px;color:var(--gris);margin-top:2px}
+.area-pct-big{font-size:22px;font-weight:500;text-align:right;line-height:1}
+.area-cnt{font-size:10px;color:var(--gris);text-align:right;margin-top:1px}
+.area-progbar{height:3px;background:#eef2f7}
+.area-progfill{height:100%;transition:width .4s}
+
+/* INDICADORES */
+.ind-grupo{border-bottom:0.5px solid #eef2f7}
+.ind-grupo:last-child{border-bottom:none}
+.ind-item{display:flex;align-items:flex-start;gap:11px;padding:12px 22px;cursor:pointer;transition:background .12s;user-select:none}
+.ind-item:hover{background:#fafcff}
+.ind-item.ck{background:#f4fdf8}
+.chkbox{width:17px;height:17px;border:1.5px solid var(--borde);border-radius:4px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .15s;background:var(--card)}
+.ind-item.ck .chkbox{background:var(--vd);border-color:var(--vd)}
+.chkbox svg{display:none}
+.ind-item.ck .chkbox svg{display:block}
+.ind-txt{flex:1}
+.ind-nombre{font-size:12px;font-weight:500;line-height:1.45;color:var(--az)}
+.ind-item.ck .ind-nombre{color:#1a7a52}
+.ind-ref{font-size:10px;color:var(--gris);margin-top:2px;font-style:italic}
+.ind-vbar{display:flex;align-items:center;gap:7px;margin-top:5px}
+.vmini{height:3px;width:65px;background:#e0e8f0;border-radius:2px;overflow:hidden}
+.vmini-fill{height:100%;border-radius:2px;transition:width .3s}
+.vsum-txt{font-size:10px;color:var(--gris)}
+.btntgl{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:10px;color:var(--cel);cursor:pointer;padding:0;display:flex;align-items:center;gap:3px;margin-left:auto}
+.arr{display:inline-block;transition:transform .2s;font-style:normal}
+.btntgl.open .arr{transform:rotate(90deg)}
+
+/* PANEL VERIFICADORES */
+.vp{display:none;background:#f8fbfe;border-top:0.5px solid #eaf0f8;padding:0 22px 10px 50px}
+.vp.open{display:block}
+.vp-hdr{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--gris);padding:9px 0 7px;border-bottom:0.5px solid #e4ecf4;margin-bottom:3px}
+.vrow{padding:7px 0;border-bottom:0.5px dashed #e8f0f8}
+.vrow:last-child{border-bottom:none}
+.vrow-top{display:flex;align-items:flex-start;gap:8px}
+.vchk{width:14px;height:14px;border:1.5px solid #b8ccd8;border-radius:3px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;background:var(--card)}
+.vchk.on{background:var(--cel);border-color:var(--cel)}
+.vchk svg{display:none}
+.vchk.on svg{display:block}
+.vright{flex:1}
+.vlbl{font-size:11px;color:var(--az);line-height:1.35;cursor:pointer;transition:all .15s}
+.vlbl.done{color:var(--cel);text-decoration:line-through;text-decoration-color:#a0c8e0}
+.obs-btn{background:none;border:none;font-family:'DM Sans',sans-serif;font-size:10px;color:var(--gris);cursor:pointer;padding:2px 0 0;transition:color .15s;display:inline-flex;align-items:center;gap:3px}
+.obs-btn:hover{color:var(--nr)}
+.obs-btn.has{color:var(--nr);font-weight:500}
+.obs-wrap{display:none;margin-top:5px}
+.obs-wrap.open{display:block}
+.obs-ta{width:100%;border:1px solid #c4d4e2;border-radius:5px;padding:7px 10px;font-family:'DM Sans',sans-serif;font-size:11px;color:var(--az);resize:vertical;min-height:50px;outline:none;background:#fffef7;transition:border .15s;line-height:1.4}
+.obs-ta:focus{border-color:var(--nr);background:#fffcf0}
+.obs-ta::placeholder{color:#aabccc}
+
+/* SELECTOR ÁREA */
+.area-sel{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.area-sel-btn{padding:4px 11px;border-radius:16px;border:1px solid;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;transition:all .15s}
+
+/* MODAL INFORME */
+.overlay{display:none;position:fixed;inset:0;background:rgba(10,20,40,.55);z-index:999;align-items:center;justify-content:center;padding:18px}
+.overlay.open{display:flex}
+.modal{background:var(--card);border-radius:14px;max-width:820px;width:100%;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(10,20,40,.3)}
+.modal-hdr{background:var(--az);padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.modal-hdr h2{font-family:'DM Serif Display',serif;color:#fff;font-size:15px;font-weight:400}
+.modal-fecha{color:rgba(255,255,255,.45);font-size:11px;margin-top:2px}
+.btn-x{background:rgba(255,255,255,.1);border:none;color:#fff;width:30px;height:30px;border-radius:5px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.btn-x:hover{background:rgba(255,255,255,.2)}
+.modal-body{padding:22px 26px;overflow-y:auto;flex:1}
+.modal-body::-webkit-scrollbar{width:4px}
+.modal-body::-webkit-scrollbar-thumb{background:var(--borde);border-radius:2px}
+.inf-top{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.inf-stat{background:var(--sup);border-radius:8px;padding:12px;text-align:center}
+.inf-stat .n{font-size:22px;font-weight:500;line-height:1}
+.inf-stat .l{font-size:10px;color:var(--gris);margin-top:2px}
+.inf-sec{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gris);margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid #e8eef5}
+.inf-bloque{margin-bottom:11px}
+.inf-bloque-tit{font-weight:500;font-size:12px;color:var(--az);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.inf-item{font-size:11px;padding:3px 0;color:var(--az);display:flex;align-items:flex-start;gap:7px;line-height:1.4}
+.dot{width:6px;height:6px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.dot-v{background:var(--vd)}.dot-r{background:var(--rj)}.dot-o{background:var(--nr)}
+.obs-line{background:#fffcf0;border-left:3px solid var(--nr);padding:4px 8px;margin:3px 0;border-radius:0 4px 4px 0;font-size:10px;color:#7a5000;font-style:italic}
+.modal-ftr{padding:13px 24px;border-top:1px solid #e8eef5;display:flex;justify-content:flex-end;gap:8px;background:var(--sup)}
+.btn-a{border:none;padding:9px 18px;border-radius:var(--r6);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:background .2s}
+.btn-a.az{background:var(--az);color:#fff}.btn-a.az:hover{background:var(--azm)}
+.btn-a.vd{background:var(--vd);color:#fff}.btn-a.vd:hover{background:#1a8055}
+.btn-a.pu{background:#9b59b6;color:#fff}.btn-a.pu:hover{background:#7d3c98}
+
+@media(max-width:860px){
+  .app-layout{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto}
+  .stat-row,.inf-top{grid-template-columns:repeat(2,1fr)}
+  .form-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- Pantalla de carga -->
+<div class="loading-screen" id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-txt">Conectando con Supabase...</div>
+</div>
+
+<div id="root"></div>
+
+<!-- Modal informe -->
+<div class="overlay" id="overlay" onclick="cerrarInforme(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-hdr">
+      <div><h2>Informe de Cumplimiento — Circular N°1</h2><div class="modal-fecha" id="inf-fecha"></div></div>
+      <button class="btn-x" onclick="cerrarInforme()">✕</button>
+    </div>
+    <div class="modal-body" id="inf-body"></div>
+    <div class="modal-ftr">
+      <button class="btn-a pu" onclick="exportarPDF()">📄 Exportar PDF</button>
+      <button class="btn-a az" onclick="window.print()">🖨️ Imprimir</button>
+      <button class="btn-a vd" onclick="cerrarInforme()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ╔══════════════════════════════════════════════════════════════════╗
+// ║  CONFIGURACIÓN SUPABASE — reemplace con sus credenciales        ║
+// ╚══════════════════════════════════════════════════════════════════╝
+const SUPABASE_URL  = 'https://nkzjnrqqakrsakynmjqp.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_KwBnnaJ_H299OgAXb5iRWg_PMWaG3h3';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ══════════════════════════════════════════════════════════════════
+// DATOS — Áreas e indicadores (sin cambios)
+// ══════════════════════════════════════════════════════════════════
+const AREAS=[
+  {id:"reconocimiento",icon:"🏛️",color:"#2d6be4",titulo:"Reconocimiento Oficial",ref:"Secciones 9 y 49",indicadores:[
+    {t:"Documento que otorga el reconocimiento oficial del Estado o lo declara cooperador de la función educacional",r:"Art. 9.1 / Doc. fiscal. N°1",v:["Decreto de reconocimiento oficial vigente","Resolución SEREMI que otorga reconocimiento","Certificado de Reconocimiento Oficial"]},
+    {t:"Documentos de constitución, modificación y vigencia de la personalidad jurídica del Sostenedor",r:"Doc. fiscal. N°2",v:["Escritura de constitución","Estatutos vigentes","Certificado de vigencia de la persona jurídica"]},
+    {t:"Título profesional o licenciatura del representante legal",r:"Doc. fiscal. N°2",v:["Copia título profesional o licenciatura del representante legal","Certificado de título emitido por casa de estudios"]},
+    {t:"Certificado de antecedentes del representante legal (no mayor a 1 año)",r:"Doc. fiscal. N°2",v:["Certificado de antecedentes Registro Civil","Fecha de emisión no superior a 12 meses"]},
+    {t:"Proyecto Educativo Institucional (PEI) disponible",r:"Doc. fiscal. N°3",v:["Documento PEI firmado por Sostenedor y Director","Sello o registro de fecha de aprobación"]},
+    {t:"Compromiso de cumplimiento de estándares nacionales de aprendizaje",r:"Doc. fiscal. N°6",v:["Documento firmado de compromiso de estándares","Registro de firma y fecha del Sostenedor"]}
+  ]},
+  {id:"infra",icon:"🏫",color:"#16a085",titulo:"Infraestructura e Higiene",ref:"Secciones 10, 11 y 40",indicadores:[
+    {t:"Certificado de recepción final o parcial de obras del inmueble (actualizado)",r:"Doc. fiscal. N°9 / Sec. 10",v:["Certificado recepción final de obra municipal vigente","Certificado recepción parcial (si aplica)"]},
+    {t:"Informe sanitario actualizado respecto del inmueble",r:"Doc. fiscal. N°9 / Sec. 11",v:["Resolución sanitaria SEREMI de Salud vigente","Informe sanitario del servicio de alimentación (si aplica)"]},
+    {t:"Inscripción conservatoria de dominio o contrato de arrendamiento/comodato",r:"Doc. fiscal. N°10-11",v:["Certificado de dominio vigente (Conservador de Bienes Raíces)","Contrato de arrendamiento o comodato con anotación marginal inscrita"]},
+    {t:"Aulas en cantidad igual a los grupos de cursos que asisten en cada jornada",r:"Sec. 40.1.5.1",v:["Plano del establecimiento con identificación de aulas","Registro de uso de aulas por curso y jornada"]},
+    {t:"Servicios higiénicos diferenciados para alumnos, alumnas y personal",r:"Sec. 40.1.5.2 / D° 47",v:["Plano de planta con ubicación de SS.HH.","Informe sanitario que certifica dotación mínima de artefactos"]},
+    {t:"Instalaciones eléctricas en buen estado; luces de emergencia operativas",r:"Sec. 40.1.5.2",v:["Certificación eléctrica SEK vigente","Registro de revisión de luces de emergencia"]},
+    {t:"Extintores vigentes, en cantidad suficiente y de fácil acceso",r:"Sec. 40.1.5.2",v:["Certificado de carga vigente por extintor","Plano de ubicación de extintores","Registro de inspección anual"]},
+    {t:"Salidas de emergencia despejadas y zona de seguridad identificada",r:"Sec. 40.1.5.2",v:["Plan de evacuación vigente","Señalética de vías de evacuación y zona de seguridad","Registro de simulacros"]},
+    {t:"Sala de primeros auxilios con camilla y gabinete (Ed. Media)",r:"Sec. 40.1.4.3",v:["Espacio físico habilitado como sala de primeros auxilios","Camilla y gabinete o casillero de medicamentos básicos"]}
+  ]},
+  {id:"matricula",icon:"📋",color:"#8b5cf6",titulo:"Matrícula y Registros",ref:"Secciones 12-16",indicadores:[
+    {t:"Registro general de matrícula completo y actualizado",r:"Doc. fiscal. N°13 / Sec. 12",v:["Libro o sistema digital de matrícula con datos de cada alumno","Registro de altas y bajas de matrícula firmados","Comprobantes de matrícula entregados a apoderados"]},
+    {t:"Libros de clases completos para todos los cursos (papel o digital)",r:"Doc. fiscal. N°14 / Sec. 13",v:["Libro de clases por curso con identificación, antecedentes, control de asignatura y subvenciones","Registro de hoja de vida de alumnos","Registro de atención PIE (si aplica)"]},
+    {t:"Asistencia registrada diariamente en control de asignatura y subvenciones",r:"Sec. 14",v:["Planillas de asistencia diaria (control de asignatura)","Registro de control de subvenciones actualizado","Correcciones firmadas y sin borrones"]},
+    {t:"Declaración de asistencias presentada en los plazos establecidos",r:"Sec. 15",v:["Comprobante de envío declaración de asistencias al sistema SIGE/MINEDUC","Registro mensual de declaraciones"]},
+    {t:"Registro de salida de alumnos implementado y actualizado",r:"Doc. fiscal. N°15 / Sec. 16",v:["Libro o registro digital de retiro diario de alumnos","Autorización de retiro firmada por apoderado"]}
+  ]},
+  {id:"admision",icon:"🎓",color:"#e67e22",titulo:"Admisión y Requisitos de Ingreso",ref:"Secciones 17-22",indicadores:[
+    {t:"Proceso de admisión no discriminatorio, conforme a Reglamento Interno",r:"Sec. 17",v:["Reglamento Interno con criterios de admisión no discriminatorios","Acta o registro del proceso de admisión"]},
+    {t:"Verificación de edad reglamentaria de ingreso para cada nivel",r:"Sec. 18.1 / D° 332",v:["Certificado de nacimiento de cada alumno","Registro de verificación de edades en matrícula"]},
+    {t:"Acreditación de escolaridad previa de alumnos",r:"Sec. 18.2",v:["Certificado de estudios del nivel anterior","Licencia de Ed. Básica (para ingreso a Ed. Media)"]},
+    {t:"Documentación alumnos NEE (FUSE, FUSER y formularios de evaluación)",r:"Sec. 18.3 / 18.4",v:["Formulario Único Síntesis Evaluación de Ingreso (FUSE)","Formulario Único Síntesis Reevaluación NEE (FUSER)","Informe psicológico/médico de diagnóstico","Informe educativo especializado"]},
+    {t:"Protocolo de embarazo y maternidad implementado y comunicado",r:"Sec. 19",v:["Protocolo escrito en Reglamento Interno","Registro de comunicación a la comunidad escolar"]},
+    {t:"Autorización para alumnos excedentes (si aplica)",r:"Doc. fiscal. N°25 / Sec. 20",v:["Resolución o autorización de la autoridad provincial/regional","Registro de alumnos excedentes en matrícula"]}
+  ]},
+  {id:"curriculum",icon:"📚",color:"#2980b9",titulo:"Planes de Estudio y Curriculum",ref:"Secciones 24-29",indicadores:[
+    {t:"Programas de estudio vigentes conforme a Bases Curriculares MINEDUC",r:"Doc. fiscal. N°4",v:["Programas de estudio aprobados por MINEDUC por nivel","Programas propios con validación MINEDUC (si aplica)"]},
+    {t:"Reglamento de evaluación y promoción disponible y comunicado",r:"Doc. fiscal. N°5",v:["Reglamento de evaluación vigente","Registro de entrega o comunicación a apoderados"]},
+    {t:"Jornada escolar conforme al tipo autorizado (JEC/sin JEC) y horario aprobado",r:"Sec. 24",v:["Horario oficial aprobado por Dirección","Resolución que acredita tipo de jornada (JEC/sin JEC)"]},
+    {t:"Clases de religión con consentimiento firmado de apoderados (no confesionales)",r:"Sec. 25",v:["Formulario de consentimiento informado firmado por apoderado","Registro de alumnos que asisten y se eximen de religión"]},
+    {t:"Plan de práctica y documentación para titulación EMTP (si aplica)",r:"Sec. 26",v:["Plan de práctica aprobado","Contratos o convenios con empresas receptoras","Actas de aprobación de práctica profesional","Registro de alumnos titulados"]},
+    {t:"Registro y autorización de cambios de actividades, suspensiones y viajes de estudio",r:"Sec. 27, 28, 29",v:["Resolución interna de suspensión de clases","Autorización DEM/DEPROV para cambios","Autorización firmada por apoderados para viajes","Nómina alumnos y docentes en viaje","Seguro de accidente vigente para viajes"]}
+  ]},
+  {id:"docentes",icon:"👩🏫",color:"#c0392b",titulo:"Docentes y Asistentes",ref:"Secciones 31 y 32",indicadores:[
+    {t:"Dotación docente completa y con idoneidad profesional acreditada",r:"Sec. 31.1 / 31.4 / Doc. fiscal. N°19",v:["Títulos profesionales o autorizaciones para ejercer docencia","Contratos de trabajo o nombramientos vigentes","Certificados de antecedentes de todos los docentes"]},
+    {t:"Docentes sin inhabilidad por delitos sexuales contra menores",r:"Sec. 31.7 / Ley 20.594",v:["Certificado del Registro de Inhabilitaciones para cada docente","Registro de verificación periódica en el sistema"]},
+    {t:"Dotación de asistentes de la educación completa con idoneidad acreditada",r:"Sec. 32 / Doc. fiscal. N°20",v:["Contratos de trabajo o nombramientos de asistentes","Certificados de antecedentes de todos los asistentes","Informe o acreditación de idoneidad psicológica (si aplica)"]},
+    {t:"Asistentes técnicas en cantidad reglamentaria (Ed. Parvularia y Ed. Especial)",r:"Sec. 32.5",v:["Nómina de asistentes técnicas por nivel","Títulos o acreditaciones de las asistentes técnicas"]},
+    {t:"Asistentes de la educación sin inhabilidad por delitos sexuales contra menores",r:"Sec. 32.4 / Ley 20.594",v:["Certificado del Registro de Inhabilitaciones para cada asistente","Registro de verificación periódica en el sistema"]}
+  ]},
+  {id:"convivencia",icon:"🤝",color:"#27ae60",titulo:"Reglamento Interno y Convivencia",ref:"Sección 33",indicadores:[
+    {t:"Reglamento Interno vigente con protocolo de convivencia y entregado formalmente a apoderados",r:"Doc. fiscal. N°7 / Sec. 33",v:["Reglamento Interno aprobado y firmado","Registro de entrega formal a apoderados (acuse de recibo)","Protocolo de convivencia escolar incluido en el RI"]},
+    {t:"Protocolo contra violencia escolar implementado (Ley 20.536)",r:"Sec. 33.1 / Ley 20.536",v:["Protocolo de acción ante situaciones de violencia escolar","Registro de casos atendidos y medidas adoptadas","Encargado de Convivencia Escolar designado"]},
+    {t:"Protocolo de ingreso de alumnos al establecimiento conforme al RI",r:"Sec. 33.2",v:["Normativa de ingreso y salida de alumnos en RI","Registro de control de ingreso diario"]}
+  ]},
+  {id:"participacion",icon:"👥",color:"#7f8c8d",titulo:"Consejo Escolar y Participación",ref:"Secciones 34-36",indicadores:[
+    {t:"Consejo Escolar constituido con todos sus integrantes reglamentarios",r:"Sec. 34 / D° 24/2005",v:["Acta de constitución del Consejo Escolar","Nómina de integrantes (director, sostenedor, docentes, apoderados, asistentes, alumnos)"]},
+    {t:"Actas del Consejo Escolar por sesión, archivadas y disponibles",r:"Doc. fiscal. N°22 / Sec. 34.3",v:["Actas firmadas de cada sesión del Consejo Escolar","Registro de asistencia por sesión","Libro de actas del Consejo Escolar"]},
+    {t:"Centro de Padres y Apoderados constituido y con personalidad jurídica",r:"Sec. 35",v:["Resolución de reconocimiento del Centro de Padres","Estatutos del Centro de Padres","Directiva vigente con acta de elección"]},
+    {t:"Acta del Consejo de Profesores disponible",r:"Doc. fiscal. N°23",v:["Libro o carpeta de actas del Consejo de Profesores","Actas firmadas por los asistentes"]},
+    {t:"Acta del Centro de Padres y Apoderados disponible",r:"Doc. fiscal. N°24",v:["Libro o carpeta de actas del Centro de Padres","Actas firmadas de sesiones ordinarias y extraordinarias"]},
+    {t:"Informe de Gestión Educativa del año anterior entregado al Consejo Escolar",r:"Sec. 36 / Doc. fiscal. N°8",v:["Informe de gestión educativa año anterior","Acta del Consejo Escolar que da cuenta de su presentación","Balance del año precedente"]}
+  ]},
+  {id:"financiamiento",icon:"💰",color:"#f39c12",titulo:"Financiamiento y Subvenciones",ref:"Secciones 37 y 38",indicadores:[
+    {t:"Solicitud Anual de Subvenciones (SET 12) presentada con todos sus componentes",r:"Doc. fiscal. N°18",v:["Solicitud anual de subvención (SET 12) enviada","Declaración de planta docente","Declaración de planta asistentes de la educación","Declaración de alumnos vulnerables"]},
+    {t:"Libros de contabilidad al día y disponibles para fiscalización",r:"Doc. fiscal. N°17",v:["Libro de contabilidad general","Comprobantes de ingresos y egresos","Balances y estados financieros"]},
+    {t:"Registros de Financiamiento Compartido completos (si aplica)",r:"Doc. fiscal. N°21",v:["Reglamento de becas","Circulares de cobros a apoderados","Declaración de ingresos proyectados","Declaración de ingresos percibidos","Registro de pago por alumno","Libro de ingresos diarios","Boletas de FC","Nómina de alumnos becados"]},
+    {t:"Alumnos vulnerables determinados conforme al procedimiento del D° 196/2006",r:"Sec. 38",v:["Postulaciones de vulnerabilidad con sus antecedentes","Comprobantes entregados a postulantes","Listado de alumnos vulnerables aceptados y rechazados con fundamento"]},
+    {t:"Cobros a apoderados dentro de lo autorizado; no se realizan cobros indebidos",r:"Sec. 37",v:["Circulares de cobros autorizados enviadas a apoderados","Registro de cobros por actividades complementarias","Acta del Consejo Escolar aprobando cobros (si aplica)"]}
+  ]},
+  {id:"pie",icon:"♿",color:"#9b59b6",titulo:"Programa de Integración Escolar (PIE)",ref:"Sección 39",indicadores:[
+    {t:"Resolución que aprueba el Convenio PIE emitida por la SEREMI de Educación",r:"Sec. 39.1",v:["Resolución SEREMI que aprueba el Convenio PIE","Identificación de establecimientos participantes en la resolución","Ampliación de reconocimiento oficial a Ed. Especial"]},
+    {t:"Convenio PIE firmado entre MINEDUC y el Sostenedor vigente",r:"Sec. 39.2",v:["Convenio PIE firmado por MINEDUC y Sostenedor","Compromisos y obligaciones del Sostenedor incluidos"]},
+    {t:"Aula de Recursos habilitada con espacio, materiales y accesibilidad universal",r:"Sec. 39.3.3.1 / D° 548",v:["Aula de Recursos con espacio físico suficiente","Materiales didácticos especializados disponibles","Cumplimiento normas accesibilidad (Ley 20.422)"]},
+    {t:"Dotación de profesionales especializados PIE en horas reglamentarias",r:"Sec. 39.3.1",v:["Contratos de profesionales especializados PIE","Horario de atención de profesionales especializados","Registro de apoyo en sala de clases regular (mín. 8 hrs. ped. semanales JEC)"]},
+    {t:"Informe Técnico de Evaluación Anual PIE presentado antes del 30 de enero",r:"Sec. 39.2",v:["Informe Técnico de Evaluación Anual del PIE","Informe Anexo con rendición de recursos","Planilla de pago de profesionales contratados","Comprobante de entrega al DEPROV o sistema web MINEDUC"]},
+    {t:"N° máximo de alumnos integrados por sala: 2 NEEP y 5 NEET",r:"Sec. 39.3.2",v:["Listado de alumnos integrados por curso con tipo de NEE","Verificación de no superar límites reglamentarios por sala"]}
+  ]},
+  {id:"remuneraciones",icon:"💳",color:"#34495e",titulo:"Remuneraciones y Cotizaciones",ref:"Secciones 47 y Doc. 26",indicadores:[
+    {t:"Contratos de trabajo de todos los trabajadores actualizados y vigentes",r:"Doc. fiscal. N°26a / Sec. 47",v:["Contratos de trabajo de docentes, asistentes y personal administrativo","Anexos de contrato actualizados (remuneración, jornada, funciones)"]},
+    {t:"Liquidaciones de remuneraciones emitidas mensualmente para todos los trabajadores",r:"Doc. fiscal. N°26b",v:["Liquidaciones de sueldo firmadas mes a mes","Registro de recepciones o acuses de recibo del trabajador"]},
+    {t:"Libro de remuneraciones timbrado y al día",r:"Doc. fiscal. N°26c",v:["Libro de remuneraciones timbrado por la Dirección del Trabajo","Registro mensual de remuneraciones actualizado"]},
+    {t:"Cotizaciones previsionales y de salud pagadas y al día",r:"Doc. fiscal. N°26d / Sec. 47",v:["Certificados de cotizaciones pagadas (AFP/INP)","Certificados de cotizaciones de salud (Fonasa/Isapre)","Comprobantes de pago de cotizaciones del último período"]},
+    {t:"Licencias médicas del personal archivadas y tramitadas",r:"Doc. fiscal. N°26e",v:["Carpeta de licencias médicas por trabajador","Comprobante de trámite ante Fonasa/Compin","Registro de días de licencia en liquidaciones"]}
+  ]},
+  {id:"seguro",icon:"🛡️",color:"#1abc9c",titulo:"Seguro Escolar de Accidentes",ref:"Sección 30",indicadores:[
+    {t:"Cobertura del Seguro Escolar de Accidentes para todos los alumnos",r:"Sec. 30 / D° 313/1973 / Ley 16.744",v:["Acreditación de cobertura del seguro escolar ante el ACHS u organismo administrador","Registro de alumnos cubiertos por el seguro","Protocolo de accidente escolar disponible"]},
+    {t:"Protocolo de accidentes escolares implementado y comunicado",r:"Sec. 30.1",v:["Protocolo escrito de actuación ante accidentes","Formulario DIAT disponible","Registro histórico de accidentes atendidos"]}
+  ]},
+  {id:"mobiliario",icon:"🪑",color:"#95a5a6",titulo:"Mobiliario y Material Didáctico",ref:"Secciones 41-45",indicadores:[
+    {t:"Inventario actualizado de mobiliario, equipamiento, elementos de enseñanza y material didáctico",r:"Doc. fiscal. N°12 / Sec. 41",v:["Inventario físico firmado y fechado","Registro de bajas o incorporaciones de mobiliario"]},
+    {t:"Mobiliario escolar adecuado y suficiente conforme a matrícula y niveles",r:"Sec. 41 / D° 1.302",v:["Mobiliario en buen estado en todas las aulas","Mobiliario adaptado para alumnos con necesidades especiales (si aplica)"]},
+    {t:"Material didáctico disponible para el desarrollo normal de las labores docentes",r:"Sec. 42",v:["Inventario de material didáctico por nivel","Material didáctico accesible a los docentes"]},
+    {t:"Lista de útiles escolares dentro de lo permitido; sin exigencias económicas indebidas",r:"Sec. 43",v:["Lista de útiles publicada y comunicada a apoderados","Verificación de ítems permitidos (sin uniformes obligatorios de marca, etc.)"]}
+  ]}
+];
+
+// ══════════════════════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════════════════════
+let session=null,eInd={},eVer={},eObs={},vista='resumen',areaActual=AREAS[0].id;
+let saveTimer=null;
+
+function colorPct(p){return p>=80?'#22a06b':p>=50?'#e8a020':'#d94040'}
+function calcArea(a){const t=a.indicadores.length,ok=a.indicadores.filter((_,i)=>eInd[`${a.id}_${i}`]).length;return{t,ok,pct:t>0?Math.round(ok/t*100):0}}
+function calcTotal(){let t=0,ok=0;AREAS.forEach(a=>{const s=calcArea(a);t+=s.t;ok+=s.ok});return{t,ok,pct:t>0?Math.round(ok/t*100):0}}
+function countObs(){return Object.values(eObs).filter(v=>v&&v.trim()).length}
+function initKeys(){
+  AREAS.forEach(a=>a.indicadores.forEach((ind,i)=>{
+    const k=`${a.id}_${i}`;
+    if(eInd[k]===undefined)eInd[k]=false;
+    ind.v.forEach((_,vi)=>{const vk=`${k}_v${vi}`;if(eVer[vk]===undefined)eVer[vk]=false;if(eObs[vk]===undefined)eObs[vk]='';});
+  }));
+}
+function loading(show,txt=''){
+  const s=document.getElementById('loading-screen');
+  if(!s)return;
+  s.classList.toggle('hidden',!show);
+  const t=s.querySelector('.loading-txt');
+  if(t&&txt)t.textContent=txt;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// SUPABASE — Funciones de datos
+// ══════════════════════════════════════════════════════════════════
+async function dbGetSessions(){
+  const{data,error}=await sb.from('sesiones').select('*').order('nombre');
+  if(error||!data)return{};
+  const idx={};
+  data.forEach(s=>{idx[s.clave]={nombre:s.nombre,est:s.establecimiento||'',creada:s.creada,activa:s.activa,pct:s.pct||0,lastSave:s.last_save};});
+  return idx;
+}
+async function dbUpsertSession(clave,data){
+  await sb.from('sesiones').upsert({clave,...data},{onConflict:'clave'});
+}
+async function dbDeleteSession(clave){
+  await sb.from('sesiones').delete().eq('clave',clave);
+}
+async function dbToggleActiva(clave,activa){
+  await sb.from('sesiones').update({activa}).eq('clave',clave);
+}
+async function dbLoadProgress(clave){
+  const{data}=await sb.from('progresos').select('ind,ver,obs').eq('clave',clave).maybeSingle();
+  if(data){eInd=data.ind||{};eVer=data.ver||{};eObs=data.obs||{};}
+  else{eInd={};eVer={};eObs={};}
+  initKeys();
+}
+async function dbSaveProgress(){
+  if(!session||session.isAdmin)return;
+  const pct=calcTotal().pct;
+  const today=new Date().toLocaleDateString('es-CL');
+  await sb.from('progresos').upsert({clave:session.key,ind:eInd,ver:eVer,obs:eObs,updated_at:new Date().toISOString()},{onConflict:'clave'});
+  await sb.from('sesiones').update({pct,last_save:today}).eq('clave',session.key);
+  const dot=document.getElementById('sv-dot');
+  if(dot){dot.classList.add('show');setTimeout(()=>dot.classList.remove('show'),1200);}
+}
+async function dbGetAdminPass(){
+  const{data}=await sb.from('config').select('value').eq('key','admin_password').maybeSingle();
+  return data?.value||'ADMIN2024';
+}
+async function dbSetAdminPass(value){
+  await sb.from('config').upsert({key:'admin_password',value},{onConflict:'key'});
+}
+function debouncedSave(){clearTimeout(saveTimer);saveTimer=setTimeout(dbSaveProgress,800);}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════
+function render(){
+  const root=document.getElementById('root');
+  if(!session){renderLogin(root);return;}
+  if(session.isAdmin){renderAdmin(root);return;}
+  renderApp(root);
+}
+
+// ── LOGIN ──
+function renderLogin(root){
+  root.innerHTML=`
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">🏫</div>
+      <h1>Lista de Verificación</h1>
+      <p>Circular N°1 · Superintendencia de Educación Escolar · Ver. 04</p>
+      <div class="login-tabs">
+        <button class="login-tab on" id="tab-u" onclick="switchTab('u')">Ingresar con clave</button>
+        <button class="login-tab" id="tab-a" onclick="switchTab('a')">Administrador</button>
+      </div>
+      <div id="lf-u">
+        <div class="field"><label>Clave de acceso</label>
+          <input id="inp-clave" type="text" placeholder="Ej: EST-2024-001" autocomplete="off"
+            style="text-transform:uppercase" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <div id="lerr-u"></div>
+        <button class="btn-pri" id="btn-login" onclick="doLogin()">Ingresar →</button>
+      </div>
+      <div id="lf-a" style="display:none">
+        <div class="field"><label>Contraseña de administrador</label>
+          <input id="inp-adm" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doAdminLogin()">
+        </div>
+        <div id="lerr-a"></div>
+        <button class="btn-pri" id="btn-adm" onclick="doAdminLogin()">Acceder como administrador →</button>
+      </div>
+      <div class="login-footer">
+        Los datos se guardan en la nube (Supabase).<br>
+        Puede retomar su progreso desde cualquier dispositivo con su clave.
+      </div>
+    </div>
+  </div>`;
+}
+function switchTab(t){
+  ['u','a'].forEach(x=>{
+    document.getElementById(`tab-${x}`).classList.toggle('on',x===t);
+    document.getElementById(`lf-${x}`).style.display=x===t?'block':'none';
+  });
+}
+async function doLogin(){
+  const clave=(document.getElementById('inp-clave').value||'').trim().toUpperCase();
+  const err=document.getElementById('lerr-u');
+  const btn=document.getElementById('btn-login');
+  if(!clave){err.innerHTML='<div class="msg-err">Ingrese su clave de acceso.</div>';return;}
+  btn.disabled=true;btn.textContent='Verificando...';
+  loading(true,'Verificando clave...');
+  const{data,error}=await sb.from('sesiones').select('*').eq('clave',clave).maybeSingle();
+  loading(false);btn.disabled=false;btn.textContent='Ingresar →';
+  if(error||!data){err.innerHTML='<div class="msg-err">Clave no encontrada. Contacte al administrador.</div>';return;}
+  if(!data.activa){err.innerHTML='<div class="msg-err">Esta clave está desactivada. Contacte al administrador.</div>';return;}
+  session={key:clave,nombre:data.nombre,est:data.establecimiento||'',isAdmin:false};
+  loading(true,'Cargando progreso guardado...');
+  await dbLoadProgress(clave);
+  loading(false);
+  vista='resumen';areaActual=AREAS[0].id;
+  render();
+}
+async function doAdminLogin(){
+  const pass=(document.getElementById('inp-adm').value||'').trim();
+  const err=document.getElementById('lerr-a');
+  const btn=document.getElementById('btn-adm');
+  btn.disabled=true;btn.textContent='Verificando...';
+  loading(true,'Verificando contraseña...');
+  const correct=await dbGetAdminPass();
+  loading(false);btn.disabled=false;btn.textContent='Acceder como administrador →';
+  if(pass!==correct){err.innerHTML='<div class="msg-err">Contraseña incorrecta.</div>';return;}
+  session={isAdmin:true};render();
+}
+
+// ── ADMIN ──
+async function renderAdmin(root){
+  loading(true,'Cargando panel...');
+  const idx=await dbGetSessions();
+  loading(false);
+  const keys=Object.entries(idx).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre));
+  root.innerHTML=`
+  <div class="admin-wrap">
+    <div class="admin-hdr">
+      <div><h2>Panel de Administrador</h2><p>Gestión de claves de acceso · ${keys.length} clave${keys.length!==1?'s':''} registrada${keys.length!==1?'s':''}</p></div>
+      <div class="btn-row">
+        <button class="btn-sm prim" onclick="toggleNuevaClaveForm()">+ Nueva clave</button>
+        <button class="btn-sm" onclick="cambiarPassword()">Cambiar contraseña</button>
+        <button class="btn-sm danger" onclick="salirAdmin()">Salir</button>
+      </div>
+    </div>
+    <div id="new-key-area"></div>
+    ${keys.length===0
+      ?`<div class="empty-state">No hay claves registradas.<br>Cree la primera con <strong>+ Nueva clave</strong>.</div>`
+      :`<div class="keys-grid">${keys.map(([k,s])=>{
+        const pct=s.pct||0,pc=colorPct(pct);
+        return `<div class="key-card">
+          <div class="key-card-top">
+            <div>
+              <div class="key-nombre">${s.nombre}</div>
+              <div class="key-est">${s.est||'Sin establecimiento'}</div>
+              <div class="key-fecha">Creada: ${s.creada} · Último guardado: ${s.lastSave||'—'}</div>
+              <div class="key-code">${k}</div>
+            </div>
+            <span class="key-badge ${s.activa?'activa':'inactiva'}">${s.activa?'Activa':'Inactiva'}</span>
+          </div>
+          <div class="key-pct-txt" style="color:${pc}">${pct}% cumplido</div>
+          <div class="key-progbar"><div class="key-progfill" style="width:${pct}%;background:${pc}"></div></div>
+          <div class="key-actions">
+            <button class="btn-sm" onclick="toggleActivarClave('${k}',${s.activa})">${s.activa?'Desactivar':'Activar'}</button>
+            <button class="btn-sm" onclick="verDetalleClave('${k}')">Ver progreso</button>
+            <button class="btn-sm danger" onclick="eliminarClave('${k}')">Eliminar</button>
+          </div>
+        </div>`;
+      }).join('')}</div>`}
+  </div>`;
+}
+function toggleNuevaClaveForm(){
+  const a=document.getElementById('new-key-area');
+  if(a.innerHTML.trim()){a.innerHTML='';return;}
+  a.innerHTML=`
+  <div class="new-key-form">
+    <h3>Nueva clave de acceso</h3>
+    <div class="form-row">
+      <div class="field"><label>Nombre del responsable</label><input id="nk-n" type="text" placeholder="Ej: María González"></div>
+      <div class="field"><label>Nombre del establecimiento</label><input id="nk-e" type="text" placeholder="Ej: Liceo Bicentenario N°1"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Clave de acceso (la ingresará el usuario)</label><input id="nk-k" type="text" placeholder="Ej: EST-2024-001" style="text-transform:uppercase"></div>
+      <div></div>
+    </div>
+    <div id="nk-err"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-sm prim" onclick="crearClave()">Crear clave</button>
+      <button class="btn-sm" onclick="document.getElementById('new-key-area').innerHTML=''">Cancelar</button>
+    </div>
+  </div>`;
+}
+async function crearClave(){
+  const nombre=(document.getElementById('nk-n').value||'').trim();
+  const est=(document.getElementById('nk-e').value||'').trim();
+  const clave=(document.getElementById('nk-k').value||'').trim().toUpperCase();
+  const err=document.getElementById('nk-err');
+  if(!nombre||!clave){err.innerHTML='<div class="msg-err">Complete nombre y clave.</div>';return;}
+  loading(true,'Creando clave...');
+  const{error}=await sb.from('sesiones').insert({clave,nombre,establecimiento:est,activa:true,creada:new Date().toLocaleDateString('es-CL'),pct:0,last_save:null});
+  loading(false);
+  if(error){err.innerHTML=`<div class="msg-err">Error: ${error.code==='23505'?'Esa clave ya existe.':error.message}</div>`;return;}
+  renderAdmin(document.getElementById('root'));
+}
+async function toggleActivarClave(clave,activa){
+  loading(true,'Actualizando...');
+  await dbToggleActiva(clave,!activa);
+  loading(false);
+  renderAdmin(document.getElementById('root'));
+}
+async function eliminarClave(clave){
+  if(!confirm(`¿Eliminar la clave "${clave}" y todos sus datos guardados?\nEsta acción es irreversible.`))return;
+  loading(true,'Eliminando...');
+  await sb.from('sesiones').delete().eq('clave',clave);
+  loading(false);
+  renderAdmin(document.getElementById('root'));
+}
+async function verDetalleClave(clave){
+  loading(true,'Cargando progreso...');
+  const{data}=await sb.from('progresos').select('ind').eq('clave',clave).maybeSingle();
+  loading(false);
+  if(!data){alert('Sin datos guardados para esta clave aún.');return;}
+  const tmpI=data.ind||{};
+  const lineas=AREAS.map(a=>{
+    const t=a.indicadores.length,ok=a.indicadores.filter((_,i)=>tmpI[`${a.id}_${i}`]).length;
+    return `${a.icon} ${a.titulo}: ${ok}/${t} (${Math.round(ok/t*100)}%)`;
+  }).join('\n');
+  alert(`Progreso de la clave ${clave}:\n\n${lineas}`);
+}
+async function cambiarPassword(){
+  const nueva=prompt('Nueva contraseña de administrador (mínimo 6 caracteres):');
+  if(!nueva||nueva.length<6){if(nueva!==null)alert('Contraseña demasiado corta.');return;}
+  loading(true,'Guardando...');
+  await dbSetAdminPass(nueva);
+  loading(false);
+  alert('✅ Contraseña actualizada correctamente.');
+}
+function salirAdmin(){session=null;render();}
+
+// ── APP PRINCIPAL ──
+function renderApp(root){
+  const s=calcTotal();
+  root.innerHTML=`
+  <div class="app-header">
+    <div>
+      <h1>Circular N°1 — Lista de Verificación</h1>
+      <p>Superintendencia de Educación Escolar · Versión 04 · 21-02-2014</p>
+    </div>
+    <div class="hdr-right">
+      <span class="saving-dot" id="sv-dot" title="Guardado en Supabase"></span>
+      <div class="session-badge">${session.nombre}<span>${session.est||''}</span></div>
+      <button class="btn-logout" onclick="cerrarSesion()">Cerrar sesión</button>
+      <button class="btn-logout" style="background:rgba(255,165,0,.15);border-color:rgba(255,165,0,.3);color:#ffd080" onclick="abrirInforme()">📋 Informe</button>
+    </div>
+  </div>
+  <div class="prog-wrap">
+    <span>Cumplimiento general</span>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:${s.pct}%"></div></div>
+    <div class="prog-pct" id="prog-pct">${s.pct}%</div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar" id="sidebar"></div>
+    <div class="main" id="main">
+      <div class="nav-tabs">
+        <button class="nav-tab on" onclick="cambiarVista('resumen',this)">Resumen</button>
+        <button class="nav-tab" onclick="cambiarVista('graficos',this)">📊 Gráficos</button>
+        <button class="nav-tab" onclick="cambiarVista('todas',this)">Todas las áreas</button>
+        <button class="nav-tab" onclick="cambiarVista('area',this)">Por área</button>
+      </div>
+      <div id="vc"></div>
+    </div>
+  </div>`;
+  renderSidebar();renderVista();
+}
+async function cerrarSesion(){
+  loading(true,'Guardando...');
+  await dbSaveProgress();
+  loading(false);
+  session=null;eInd={};eVer={};eObs={};render();
+}
+
+function renderSidebar(){
+  const sb2=document.getElementById('sidebar');if(!sb2)return;
+  sb2.innerHTML='<div class="sid-lbl">Áreas de revisión</div>'+
+  AREAS.map(a=>{
+    const s=calcArea(a);
+    return`<div>
+      <div class="sid-item ${s.ok===s.t&&s.t>0?'done':''} ${areaActual===a.id&&vista==='area'?'on':''}" onclick="irAArea('${a.id}')">
+        <span style="font-size:13px">${a.icon}</span>
+        <span style="flex:1;line-height:1.3">${a.titulo}</span>
+        <span class="sid-pill">${s.ok}/${s.t}</span>
+      </div>
+      <div class="sid-prog"><div class="sid-prog-fill" style="width:${s.pct}%;background:${colorPct(s.pct)}"></div></div>
+    </div>`;
+  }).join('');
+}
+function updateGlobalProg(){
+  const s=calcTotal();
+  const pf=document.getElementById('prog-fill'),pp=document.getElementById('prog-pct');
+  if(pf)pf.style.width=s.pct+'%';if(pp)pp.textContent=s.pct+'%';
+}
+function cambiarVista(v,btn){
+  vista=v;
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('on'));
+  if(btn)btn.classList.add('on');renderVista();
+}
+function irAArea(id){
+  areaActual=id;vista='area';
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('on',t.textContent.includes('Por área')));
+  renderVista();renderSidebar();
+}
+function renderVista(){
+  const c=document.getElementById('vc');if(!c)return;
+  if(vista==='resumen')renderResumen(c);
+  else if(vista==='graficos')renderGraficos(c);
+  else if(vista==='todas')renderTodas(c);
+  else if(vista==='area')renderPorArea(c);
+}
+
+/* RESUMEN */
+function renderResumen(c){
+  const s=calcTotal(),obs=countObs();
+  c.innerHTML=`
+  <div class="stat-row">
+    <div class="stat"><div class="stat-n" style="color:#22a06b">${s.ok}</div><div class="stat-l">Indicadores cumplidos</div></div>
+    <div class="stat"><div class="stat-n" style="color:#d94040">${s.t-s.ok}</div><div class="stat-l">Indicadores pendientes</div></div>
+    <div class="stat"><div class="stat-n" style="color:#3b82c4">${s.pct}%</div><div class="stat-l">Cumplimiento general</div></div>
+    <div class="stat"><div class="stat-n" style="color:#e8700a">${obs}</div><div class="stat-l">Observaciones registradas</div></div>
+  </div>
+  <div class="res-card">
+    <table class="res-table">
+      <thead><tr><th>Área</th><th style="text-align:center">Cumplidos</th><th style="text-align:center">Pend.</th><th>Avance</th><th style="text-align:center">%</th></tr></thead>
+      <tbody>${AREAS.map(a=>{const as=calcArea(a),col=colorPct(as.pct);
+        return`<tr onclick="irAArea('${a.id}')">
+          <td>${a.icon} <strong>${a.titulo}</strong></td>
+          <td style="text-align:center;color:#22a06b;font-weight:600">${as.ok}</td>
+          <td style="text-align:center;color:#d94040">${as.t-as.ok}</td>
+          <td><div class="bar-t"><div class="bar-fill" style="width:${as.pct}%;background:${col}"></div></div></td>
+          <td style="text-align:center"><span class="chip" style="background:${col}22;color:${col}">${as.pct}%</span></td>
+        </tr>`;}).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+/* GRÁFICOS */
+const NSV='http://www.w3.org/2000/svg';
+function drawDonut(svg,pct,color,bg,cx,cy,r,sw){
+  while(svg.firstChild)svg.removeChild(svg.firstChild);
+  const bgC=document.createElementNS(NSV,'circle');
+  bgC.setAttribute('cx',cx);bgC.setAttribute('cy',cy);bgC.setAttribute('r',r);
+  bgC.setAttribute('fill','none');bgC.setAttribute('stroke',bg);bgC.setAttribute('stroke-width',sw);
+  svg.appendChild(bgC);
+  const p=Math.min(Math.max(pct,0),100);
+  if(p===100){
+    const f=document.createElementNS(NSV,'circle');
+    f.setAttribute('cx',cx);f.setAttribute('cy',cy);f.setAttribute('r',r);
+    f.setAttribute('fill','none');f.setAttribute('stroke',color);f.setAttribute('stroke-width',sw);
+    svg.appendChild(f);
+  }else if(p>0){
+    const circ=2*Math.PI*r,filled=circ*p/100;
+    const arc=document.createElementNS(NSV,'circle');
+    arc.setAttribute('cx',cx);arc.setAttribute('cy',cy);arc.setAttribute('r',r);
+    arc.setAttribute('fill','none');arc.setAttribute('stroke',color);arc.setAttribute('stroke-width',sw);
+    arc.setAttribute('stroke-dasharray',`${filled} ${circ}`);
+    arc.setAttribute('stroke-linecap','round');
+    arc.setAttribute('transform',`rotate(-90 ${cx} ${cy})`);
+    svg.appendChild(arc);
+  }
+}
+function renderGraficos(c){
+  const s=calcTotal(),col=colorPct(s.pct);
+  c.innerHTML=`
+  <div class="graf-global-card">
+    <div class="donut-big">
+      <svg id="gsvg-g" viewBox="0 0 130 130" width="130" height="130"></svg>
+      <div class="donut-lbl"><div class="d-pct" id="gpct-g" style="color:${col}">${s.pct}%</div><div class="d-sub">cumplimiento</div></div>
+    </div>
+    <div style="flex:1">
+      <div style="font-size:14px;font-weight:500;margin-bottom:10px;color:var(--az)">Resumen por área de revisión</div>
+      <div class="leyenda-list">${AREAS.map(a=>{const as=calcArea(a);
+        return`<div class="leyenda-row"><div class="ley-dot" style="background:${a.color}"></div>
+          <span style="flex:1">${a.icon} ${a.titulo}</span>
+          <span style="font-weight:500;color:${colorPct(as.pct)}">${as.pct}%</span></div>`;
+      }).join('')}</div>
+    </div>
+  </div>
+  <div class="graf-grid">${AREAS.map(a=>{const as=calcArea(a),c2=colorPct(as.pct);
+    return`<div class="graf-card" onclick="irAArea('${a.id}')">
+      <div class="donut-sm">
+        <svg id="gsvg-${a.id}" viewBox="0 0 90 90" width="90" height="90"></svg>
+        <div class="donut-sm-lbl">
+          <div class="dsm-pct" style="color:${c2}">${as.pct}%</div>
+          <div class="dsm-n">${as.ok}/${as.t}</div>
+        </div>
+      </div>
+      <div class="gcard-info">
+        <div class="gcard-titulo">${a.icon} ${a.titulo}</div>
+        <div class="gcard-chips">
+          <span class="gchip" style="background:#d1f2e4;color:#1a7a52">✓ ${as.ok}</span>
+          <span class="gchip" style="background:#fde8e8;color:#a02020">✗ ${as.t-as.ok}</span>
+        </div>
+      </div>
+    </div>`;}).join('')}</div>`;
+  requestAnimationFrame(()=>{
+    const svgG=document.getElementById('gsvg-g');
+    if(svgG)drawDonut(svgG,s.pct,col,'#e4ecf4',65,65,52,13);
+    AREAS.forEach(a=>{const sv=document.getElementById(`gsvg-${a.id}`);if(sv){const as=calcArea(a);drawDonut(sv,as.pct,colorPct(as.pct),'#edf2f7',45,45,34,9);}});
+  });
+}
+function updateGraficos(){
+  if(vista!=='graficos')return;
+  const s=calcTotal(),col=colorPct(s.pct);
+  const svgG=document.getElementById('gsvg-g');if(svgG)drawDonut(svgG,s.pct,col,'#e4ecf4',65,65,52,13);
+  const gp=document.getElementById('gpct-g');if(gp){gp.textContent=s.pct+'%';gp.style.color=col;}
+  AREAS.forEach(a=>{
+    const sv=document.getElementById(`gsvg-${a.id}`);const as=calcArea(a),c2=colorPct(as.pct);
+    if(sv)drawDonut(sv,as.pct,c2,'#edf2f7',45,45,34,9);
+    const card=sv?.closest('.graf-card');
+    if(card){
+      const pp=card.querySelector('.dsm-pct');if(pp){pp.textContent=as.pct+'%';pp.style.color=c2;}
+      const nn=card.querySelector('.dsm-n');if(nn)nn.textContent=`${as.ok}/${as.t}`;
+      const chips=card.querySelector('.gcard-chips');
+      if(chips)chips.innerHTML=`<span class="gchip" style="background:#d1f2e4;color:#1a7a52">✓ ${as.ok}</span><span class="gchip" style="background:#fde8e8;color:#a02020">✗ ${as.t-as.ok}</span>`;
+    }
+  });
+}
+
+/* TODAS / POR ÁREA */
+function renderTodas(c){c.innerHTML='';AREAS.forEach(a=>c.appendChild(buildAreaCard(a,'t')));}
+function renderPorArea(c){
+  c.innerHTML='';
+  const sel=document.createElement('div');sel.className='area-sel';
+  AREAS.forEach(a=>{
+    const b=document.createElement('button');b.className='area-sel-btn';
+    const on=a.id===areaActual;
+    b.style.cssText=`border-color:${a.color};background:${on?a.color:'transparent'};color:${on?'#fff':a.color}`;
+    b.textContent=`${a.icon} ${a.titulo}`;
+    b.onclick=()=>{areaActual=a.id;renderPorArea(c);renderSidebar();};
+    sel.appendChild(b);
+  });
+  c.appendChild(sel);
+  const area=AREAS.find(a=>a.id===areaActual);
+  if(area)c.appendChild(buildAreaCard(area,'p'));
+}
+
+/* AREA CARD */
+function buildAreaCard(area,ctx){
+  const s=calcArea(area),col=colorPct(s.pct);
+  const div=document.createElement('div');div.className='area-card';
+  div.innerHTML=`
+    <div class="area-hdr">
+      <div class="area-icon-wrap">
+        <div class="area-icon" style="background:${area.color}22;color:${area.color}">${area.icon}</div>
+        <div><div class="area-tit">${area.titulo}</div><div class="area-sub">${area.ref}</div></div>
+      </div>
+      <div>
+        <div class="area-pct-big" id="apct-${area.id}-${ctx}" style="color:${col}">${s.pct}%</div>
+        <div class="area-cnt" id="acnt-${area.id}-${ctx}">${s.ok} de ${s.t} indicadores</div>
+      </div>
+    </div>
+    <div class="area-progbar"><div class="area-progfill" id="abar-${area.id}-${ctx}" style="width:${s.pct}%;background:${col}"></div></div>
+    <div id="abody-${area.id}-${ctx}"></div>`;
+  const body=div.querySelector(`#abody-${area.id}-${ctx}`);
+  area.indicadores.forEach((ind,i)=>{
+    const key=`${area.id}_${i}`,ck=eInd[key];
+    const tV=ind.v.length,cumV=ind.v.filter((_,vi)=>eVer[`${key}_v${vi}`]).length;
+    const pctV=tV>0?Math.round(cumV/tV*100):0;
+    const grp=document.createElement('div');grp.className='ind-grupo';
+    const item=document.createElement('div');
+    item.className='ind-item'+(ck?' ck':'');item.dataset.key=key;item.dataset.area=area.id;item.dataset.ctx=ctx;
+    item.innerHTML=`
+      <div class="chkbox"><svg width="9" height="7" viewBox="0 0 12 9" fill="none">
+        <path d="M1 4L4.5 7.5L11 1" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="ind-txt">
+        <div class="ind-nombre">${ind.t}</div>
+        <div class="ind-ref">Ref.: ${ind.r}</div>
+        ${tV>0?`<div class="ind-vbar">
+          <div class="vmini"><div class="vmini-fill" id="vmb-${key}-${ctx}" style="width:${pctV}%;background:${colorPct(pctV)}"></div></div>
+          <span class="vsum-txt" id="vsum-${key}-${ctx}">${cumV}/${tV} verificadores</span>
+          <button class="btntgl" id="btntgl-${key}-${ctx}"
+            onclick="tglPanel(event,'vp-${key}-${ctx}','btntgl-${key}-${ctx}')"><i class="arr">▶</i> ver</button>
+        </div>`:''}
+      </div>`;
+    item.addEventListener('click',e=>{if(e.target.closest('button')||e.target.tagName==='TEXTAREA')return;toggleInd(key,area.id,ctx);});
+    grp.appendChild(item);
+    if(tV>0){
+      const panel=document.createElement('div');panel.className='vp';panel.id=`vp-${key}-${ctx}`;
+      const phdr=document.createElement('div');phdr.className='vp-hdr';
+      phdr.textContent='Medios de verificación — marque los presentes y agregue observaciones si corresponde';
+      panel.appendChild(phdr);
+      ind.v.forEach((v,vi)=>{
+        const vk=`${key}_v${vi}`,von=eVer[vk],obsV=eObs[vk]||'';
+        const row=document.createElement('div');row.className='vrow';
+        const vchk=document.createElement('div');
+        vchk.className='vchk'+(von?' on':'');vchk.dataset.vk=vk;
+        vchk.innerHTML='<svg width="8" height="6" viewBox="0 0 12 9" fill="none"><path d="M1 4L4.5 7.5L11 1" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        vchk.addEventListener('click',e=>{e.stopPropagation();toggleVer(vk,key,area.id,ctx);});
+        const vright=document.createElement('div');vright.className='vright';
+        const vlbl=document.createElement('div');vlbl.className='vlbl'+(von?' done':'');vlbl.textContent=v;
+        vlbl.addEventListener('click',e=>{e.stopPropagation();toggleVer(vk,key,area.id,ctx);});
+        const safeId=`ow-${(vk+'-'+ctx).replace(/_/g,'-')}`;
+        const obsBtn=document.createElement('button');
+        obsBtn.className='obs-btn'+(obsV?' has':'');
+        obsBtn.innerHTML=obsV?'✏️ Observación registrada':'＋ Agregar observación';
+        obsBtn.addEventListener('click',e=>{
+          e.stopPropagation();const w=document.getElementById(safeId);if(!w)return;
+          w.classList.toggle('open');if(w.classList.contains('open'))w.querySelector('textarea')?.focus();
+        });
+        const obsW=document.createElement('div');obsW.className='obs-wrap';obsW.id=safeId;
+        const ta=document.createElement('textarea');ta.className='obs-ta';
+        ta.placeholder='Observación sobre este verificador…';ta.value=obsV;
+        ta.addEventListener('click',e=>e.stopPropagation());
+        ta.addEventListener('input',e=>{
+          e.stopPropagation();eObs[vk]=ta.value;debouncedSave();
+          obsBtn.className='obs-btn'+(ta.value.trim()?' has':'');
+          obsBtn.innerHTML=ta.value.trim()?'✏️ Observación registrada':'＋ Agregar observación';
+        });
+        obsW.appendChild(ta);vright.appendChild(vlbl);vright.appendChild(obsBtn);vright.appendChild(obsW);
+        const rt=document.createElement('div');rt.className='vrow-top';rt.appendChild(vchk);rt.appendChild(vright);
+        row.appendChild(rt);panel.appendChild(row);
+      });
+      grp.appendChild(panel);
+    }
+    body.appendChild(grp);
+  });
+  return div;
+}
+function tglPanel(e,pid,bid){
+  e.stopPropagation();
+  const p=document.getElementById(pid),b=document.getElementById(bid);
+  if(!p)return;p.classList.toggle('open');if(b)b.classList.toggle('open');
+}
+
+/* TOGGLE INDICADOR */
+function toggleInd(key,areaId,ctx){
+  eInd[key]=!eInd[key];
+  document.querySelectorAll(`.ind-item[data-key="${key}"]`).forEach(el=>el.classList.toggle('ck',eInd[key]));
+  updateAreaStats(areaId);updateGlobalProg();renderSidebar();updateGraficos();
+  if(vista==='resumen')renderResumen(document.getElementById('vc'));
+  debouncedSave();
+}
+
+/* TOGGLE VERIFICADOR */
+function toggleVer(vk,indKey,areaId,ctx){
+  eVer[vk]=!eVer[vk];
+  const area=AREAS.find(a=>a.id===areaId);
+  const parts=indKey.split('_'),idx=parseInt(parts[parts.length-1]);
+  const ind=area?.indicadores[idx];
+  if(ind&&ind.v.length>0){
+    const todos=ind.v.every((_,vi)=>eVer[`${indKey}_v${vi}`]);
+    if(todos!==eInd[indKey]){
+      eInd[indKey]=todos;
+      document.querySelectorAll(`.ind-item[data-key="${indKey}"]`).forEach(el=>el.classList.toggle('ck',todos));
+    }
+  }
+  document.querySelectorAll(`.vchk[data-vk="${vk}"]`).forEach(el=>{
+    el.classList.toggle('on',eVer[vk]);
+    const lbl=el.nextElementSibling?.querySelector('.vlbl');
+    if(lbl)lbl.className='vlbl'+(eVer[vk]?' done':'');
+  });
+  if(ind){
+    const tV=ind.v.length,cumV=ind.v.filter((_,vi)=>eVer[`${indKey}_v${vi}`]).length;
+    const pV=tV>0?Math.round(cumV/tV*100):0;
+    document.querySelectorAll(`[id^="vmb-${indKey}-"]`).forEach(el=>{el.style.width=pV+'%';el.style.background=colorPct(pV);});
+    document.querySelectorAll(`[id^="vsum-${indKey}-"]`).forEach(el=>el.textContent=`${cumV}/${tV} verificadores`);
+  }
+  updateAreaStats(areaId);updateGlobalProg();renderSidebar();updateGraficos();
+  if(vista==='resumen')renderResumen(document.getElementById('vc'));
+  debouncedSave();
+}
+
+function updateAreaStats(areaId){
+  const area=AREAS.find(a=>a.id===areaId);if(!area)return;
+  const s=calcArea(area),col=colorPct(s.pct);
+  document.querySelectorAll(`[id^="apct-${areaId}-"]`).forEach(el=>{el.textContent=s.pct+'%';el.style.color=col;});
+  document.querySelectorAll(`[id^="acnt-${areaId}-"]`).forEach(el=>el.textContent=`${s.ok} de ${s.t} indicadores`);
+  document.querySelectorAll(`[id^="abar-${areaId}-"]`).forEach(el=>el.style.width=s.pct+'%');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INFORME + EXPORTAR PDF (sin cambios respecto a versión anterior)
+// ══════════════════════════════════════════════════════════════════
+function abrirInforme(){
+  const s=calcTotal(),obs=countObs();
+  const fecha=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('inf-fecha').textContent=`${session.nombre}${session.est?' — '+session.est:''} · ${fecha}`;
+  let html=`<div class="inf-top">
+    <div class="inf-stat"><div class="n" style="color:#22a06b">${s.ok}</div><div class="l">Indicadores cumplidos</div></div>
+    <div class="inf-stat"><div class="n" style="color:#d94040">${s.t-s.ok}</div><div class="l">Indicadores pendientes</div></div>
+    <div class="inf-stat"><div class="n" style="color:#3b82c4">${s.pct}%</div><div class="l">Cumplimiento general</div></div>
+    <div class="inf-stat"><div class="n" style="color:#e8700a">${obs}</div><div class="l">Observaciones registradas</div></div>
+  </div>`;
+  html+=`<div class="inf-sec">✅ Indicadores cumplidos (${s.ok})</div>`;
+  let hasCump=false;
+  AREAS.forEach(a=>{
+    let blq='';
+    a.indicadores.forEach((ind,i)=>{
+      if(!eInd[`${a.id}_${i}`])return;hasCump=true;
+      const key=`${a.id}_${i}`;
+      const vOk=ind.v.filter((_,vi)=>eVer[`${key}_v${vi}`]);
+      const vNo=ind.v.filter((_,vi)=>!eVer[`${key}_v${vi}`]);
+      blq+=`<div class="inf-item"><div class="dot dot-v"></div><div><strong>${ind.t}</strong>`;
+      if(vOk.length)blq+=`<br><span style="color:#22a06b;font-size:10px">✓ Presentes: ${vOk.join(' · ')}</span>`;
+      if(vNo.length)blq+=`<br><span style="color:#d94040;font-size:10px">✗ Faltan: ${vNo.join(' · ')}</span>`;
+      ind.v.forEach((v,vi)=>{const o=eObs[`${key}_v${vi}`];if(o&&o.trim())blq+=`<div class="obs-line">💬 <strong>${v}:</strong> ${o.trim()}</div>`;});
+      blq+='</div></div>';
+    });
+    if(blq){const as=calcArea(a);html+=`<div class="inf-bloque"><div class="inf-bloque-tit">${a.icon} ${a.titulo} <span style="font-size:10px;color:var(--gris);font-weight:400">(${as.ok}/${as.t})</span></div><div>${blq}</div></div>`;}
+  });
+  if(!hasCump)html+=`<div style="color:var(--gris);padding:10px;background:var(--sup);border-radius:6px;font-size:12px">Sin indicadores cumplidos aún.</div>`;
+  const pend=s.t-s.ok;
+  html+=`<div class="inf-sec" style="margin-top:20px">❌ Indicadores pendientes (${pend})</div>`;
+  if(!pend){
+    html+=`<div style="color:#22a06b;padding:12px;background:#f5fdf9;border-radius:8px;font-size:12px">🎉 ¡Todos los indicadores están cumplidos!</div>`;
+  } else {
+    AREAS.forEach(a=>{
+      let blq='';
+      a.indicadores.forEach((ind,i)=>{
+        if(eInd[`${a.id}_${i}`])return;
+        const key=`${a.id}_${i}`;
+        const vNo=ind.v.filter((_,vi)=>!eVer[`${key}_v${vi}`]);
+        const vOk=ind.v.filter((_,vi)=>eVer[`${key}_v${vi}`]);
+        blq+=`<div class="inf-item"><div class="dot dot-r"></div><div><strong>${ind.t}</strong>`;
+        if(vNo.length)blq+=`<br><span style="color:#d94040;font-size:10px">✗ Faltantes: ${vNo.join(' · ')}</span>`;
+        if(vOk.length)blq+=`<br><span style="color:#22a06b;font-size:10px">✓ Presentes: ${vOk.join(' · ')}</span>`;
+        ind.v.forEach((v,vi)=>{const o=eObs[`${key}_v${vi}`];if(o&&o.trim())blq+=`<div class="obs-line">💬 <strong>${v}:</strong> ${o.trim()}</div>`;});
+        blq+='</div></div>';
+      });
+      if(blq){const pN=a.indicadores.filter((_,i)=>!eInd[`${a.id}_${i}`]).length;html+=`<div class="inf-bloque"><div class="inf-bloque-tit">${a.icon} ${a.titulo} <span style="font-size:10px;color:#d94040;font-weight:400">(${pN} pendientes)</span></div><div>${blq}</div></div>`;}
+    });
+  }
+  if(obs>0){
+    html+=`<div class="inf-sec" style="margin-top:20px">💬 Observaciones consolidadas (${obs})</div>`;
+    AREAS.forEach(a=>{
+      let blq='';
+      a.indicadores.forEach((ind,i)=>{
+        const key=`${a.id}_${i}`;
+        ind.v.forEach((v,vi)=>{const o=eObs[`${key}_v${vi}`];if(o&&o.trim())blq+=`<div class="inf-item"><div class="dot dot-o"></div><div><span style="font-size:10px;color:var(--gris)">${ind.t}</span><br><strong>${v}:</strong> <span style="color:#7a5000">${o.trim()}</span></div></div>`;});
+      });
+      if(blq)html+=`<div class="inf-bloque"><div class="inf-bloque-tit">${a.icon} ${a.titulo}</div><div>${blq}</div></div>`;
+    });
+  }
+  document.getElementById('inf-body').innerHTML=html;
+  document.getElementById('overlay').classList.add('open');
+}
+function cerrarInforme(e){
+  if(e&&e.target!==document.getElementById('overlay'))return;
+  document.getElementById('overlay').classList.remove('open');
+}
+function exportarPDF(){
+  const s=calcTotal(),obs=countObs();
+  const fecha=new Date().toLocaleDateString('es-CL',{year:'numeric',month:'long',day:'numeric'});
+  function svgStr(pct,color,size,r,sw){
+    const c=size/2,circ=2*Math.PI*r,p=Math.min(Math.max(pct,0),100);
+    const bg2=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#e8eef5" stroke-width="${sw}"/>`;
+    let arc='';
+    if(p===100){arc=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}"/>`;}
+    else if(p>0){const f=(circ*p/100).toFixed(2);arc=`<circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-dasharray="${f} ${circ.toFixed(2)}" stroke-linecap="round" transform="rotate(-90 ${c} ${c})"/>`;}
+    return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">${bg2}${arc}</svg>`;
+  }
+  let h=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Informe Circular N°1 — ${fecha}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif;color:#1a2e4a;font-size:10pt}
+h1{font-family:'DM Serif Display',serif;font-size:20pt;font-weight:400;color:#1a2e4a}
+.portada{padding:26pt 32pt 16pt;border-bottom:3pt solid #1a2e4a;margin-bottom:16pt}
+.portada-sub{color:#8899aa;font-size:8pt;margin-top:3pt;letter-spacing:.05em;text-transform:uppercase}
+.portada-sesion{color:#1a2e4a;font-size:10pt;margin-top:5pt;font-weight:500}
+.portada-fecha{color:#8899aa;font-size:9pt;margin-top:2pt}
+.stats-row{display:flex;gap:9pt;margin:12pt 0}
+.stat-box{flex:1;background:#f4f6f9;border-radius:5pt;padding:9pt;text-align:center}
+.stat-n{font-size:19pt;font-weight:500;line-height:1}.stat-l{font-size:7pt;color:#8899aa;margin-top:2pt}
+.sec{font-size:7pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8899aa;border-bottom:1pt solid #d0dae6;padding-bottom:3pt;margin:14pt 0 8pt}
+.graf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7pt;margin-bottom:16pt}
+.graf-card{background:#f7f9fc;border-radius:5pt;padding:8pt 5pt;text-align:center;border:.5pt solid #d0dae6}
+.graf-tit{font-size:7pt;font-weight:500;color:#1a2e4a;margin-top:3pt;line-height:1.3}
+.donut-rel{position:relative;display:inline-block}
+.donut-lbl-pdf{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+table{width:100%;border-collapse:collapse;font-size:8.5pt;margin-bottom:9pt}
+th{background:#1a2e4a;color:#fff;padding:4pt 6pt;text-align:left;font-size:7.5pt;font-weight:600}
+td{padding:4pt 6pt;border-bottom:.5pt solid #e8eef5;vertical-align:top}
+tr:nth-child(even) td{background:#f9fafb}
+.bar-pdf{height:4pt;background:#e0e8f0;border-radius:2pt;overflow:hidden;width:60pt;display:inline-block;vertical-align:middle}
+.bar-pdf-fill{height:100%;border-radius:2pt}
+.chip-pdf{display:inline-block;padding:1pt 5pt;border-radius:6pt;font-weight:700;font-size:7pt}
+.area-bloque{margin-bottom:10pt;border:.5pt solid #d0dae6;border-radius:5pt;overflow:hidden;page-break-inside:avoid}
+.area-hdr-pdf{padding:6pt 9pt;display:flex;align-items:center;justify-content:space-between}
+.area-hdr-tit{font-family:'DM Serif Display',serif;font-size:9pt;font-weight:400}
+.area-hdr-pct{font-size:12pt;font-weight:500}
+.area-progbar-pdf{height:2.5pt}
+.ind-row{padding:5pt 9pt;border-bottom:.5pt solid #f0f4f8;display:flex;align-items:flex-start;gap:5pt}
+.ind-row:last-child{border-bottom:none}
+.ind-chk{width:9pt;height:9pt;border-radius:2pt;border:1pt solid #d0dae6;flex-shrink:0;margin-top:1pt;display:flex;align-items:center;justify-content:center}
+.ind-chk.ok{background:#22a06b;border-color:#22a06b}
+.ind-n{font-size:8pt;font-weight:500;line-height:1.4}
+.ind-r{font-size:7pt;color:#8899aa;font-style:italic}
+.vsub{padding:4pt 9pt 6pt 23pt;background:#f8fbfe;border-top:.5pt solid #eaf0f8}
+.vsub-tit{font-size:6.5pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8899aa;margin-bottom:2pt}
+.vrow-pdf{display:flex;align-items:flex-start;gap:5pt;padding:2pt 0}
+.vchk-pdf{width:8pt;height:8pt;border-radius:2pt;border:1pt solid #b8ccd8;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.vchk-pdf.on{background:#3b82c4;border-color:#3b82c4}
+.vlbl-pdf{font-size:7.5pt;line-height:1.3}
+.vlbl-pdf.done{color:#3b82c4;text-decoration:line-through;text-decoration-color:#a0c8e0}
+.obs-pdf{background:#fffcf0;border-left:2pt solid #e8700a;padding:3pt 5pt;margin-top:2pt;border-radius:0 3pt 3pt 0;font-size:7pt;color:#7a5000;font-style:italic}
+@page{margin:14mm 16mm;size:A4}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>`;
+  h+=`<div class="portada"><h1>Informe de Cumplimiento</h1>
+    <div class="portada-sub">Circular N°1 · Superintendencia de Educación Escolar · Versión 04 · 21-02-2014</div>
+    <div class="portada-sesion">${session.nombre}${session.est?' — '+session.est:''}</div>
+    <div class="portada-fecha">Generado el ${fecha}</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-n" style="color:#22a06b">${s.ok}</div><div class="stat-l">Indicadores cumplidos</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:#d94040">${s.t-s.ok}</div><div class="stat-l">Indicadores pendientes</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:#3b82c4">${s.pct}%</div><div class="stat-l">Cumplimiento general</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:#e8700a">${obs}</div><div class="stat-l">Observaciones registradas</div></div>
+  </div>`;
+  h+=`<div class="sec">Cumplimiento por área de revisión</div><div class="graf-grid">`;
+  AREAS.forEach(a=>{const as=calcArea(a),c=colorPct(as.pct);
+    h+=`<div class="graf-card"><div class="donut-rel">${svgStr(as.pct,c,70,27,8)}<div class="donut-lbl-pdf"><div style="font-size:10pt;font-weight:500;color:${c}">${as.pct}%</div><div style="font-size:7pt;color:#8899aa">${as.ok}/${as.t}</div></div></div><div class="graf-tit">${a.icon} ${a.titulo}</div></div>`;
+  });
+  h+=`</div><div class="sec" style="page-break-before:always">Tabla resumen por área</div>
+  <table><thead><tr><th>Área</th><th>Cumplidos</th><th>Pendientes</th><th>Avance</th><th>%</th></tr></thead><tbody>`;
+  AREAS.forEach(a=>{const as=calcArea(a),c=colorPct(as.pct);
+    h+=`<tr><td>${a.icon} <strong>${a.titulo}</strong><br><span style="font-size:7pt;color:#8899aa">${a.ref}</span></td>
+      <td style="color:#22a06b;font-weight:600;text-align:center">${as.ok}</td>
+      <td style="color:#d94040;text-align:center">${as.t-as.ok}</td>
+      <td><div class="bar-pdf"><div class="bar-pdf-fill" style="width:${as.pct}%;background:${c}"></div></div></td>
+      <td style="text-align:center"><span class="chip-pdf" style="background:${c}22;color:${c}">${as.pct}%</span></td></tr>`;
+  });
+  h+=`</tbody></table><div class="sec" style="page-break-before:always">Detalle completo por área</div>`;
+  AREAS.forEach(a=>{
+    const as=calcArea(a),c=colorPct(as.pct);
+    h+=`<div class="area-bloque"><div class="area-hdr-pdf" style="background:${a.color}16;border-bottom:2pt solid ${a.color}44">
+      <div><div class="area-hdr-tit" style="color:${a.color}">${a.icon} ${a.titulo}</div><div style="font-size:7pt;color:#8899aa">${a.ref}</div></div>
+      <div style="text-align:right"><div class="area-hdr-pct" style="color:${c}">${as.pct}%</div><div style="font-size:7pt;color:#8899aa">${as.ok}/${as.t}</div></div>
+    </div><div class="area-progbar-pdf" style="background:#e8eef5"><div style="width:${as.pct}%;height:100%;background:${c}"></div></div>`;
+    a.indicadores.forEach((ind,i)=>{
+      const key=`${a.id}_${i}`,ok=eInd[key];
+      const tV=ind.v.length,cumV=ind.v.filter((_,vi)=>eVer[`${key}_v${vi}`]).length;
+      h+=`<div class="ind-row"><div class="ind-chk${ok?' ok':''}">${ok?'<svg width="6" height="5" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</div>
+        <div style="flex:1"><div class="ind-n" style="color:${ok?'#1a7a52':'#1a2e4a'}">${ind.t}</div><div class="ind-r">Ref.: ${ind.r} · Verificadores: ${cumV}/${tV}</div></div></div>`;
+      if(tV>0){
+        h+=`<div class="vsub"><div class="vsub-tit">Medios de verificación</div>`;
+        ind.v.forEach((v,vi)=>{const vk=`${key}_v${vi}`,von=eVer[vk],obsT=eObs[vk]||'';
+          h+=`<div class="vrow-pdf"><div class="vchk-pdf${von?' on':''}">${von?'<svg width="6" height="5" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</div>
+            <div><div class="vlbl-pdf${von?' done':''}">${v}</div>${obsT.trim()?`<div class="obs-pdf">💬 ${obsT.trim()}</div>`:''}</div></div>`;
+        });h+=`</div>`;
+      }
+    });h+=`</div>`;
+  });
+  if(obs>0){
+    let rows='';
+    AREAS.forEach(a=>a.indicadores.forEach((ind,i)=>{const key=`${a.id}_${i}`;ind.v.forEach((v,vi)=>{const o=eObs[`${key}_v${vi}`];if(o&&o.trim())rows+=`<tr><td>${a.icon} ${a.titulo}</td><td>${ind.t}</td><td>${v}</td><td style="font-style:italic;color:#7a5000">${o.trim()}</td></tr>`;});}));
+    h+=`<div class="sec" style="page-break-before:always">Observaciones consolidadas (${obs})</div>
+    <table><thead><tr><th>Área</th><th>Indicador</th><th>Verificador</th><th>Observación</th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+  h+=`</body></html>`;
+  const win=window.open('','_blank','width=960,height=720');
+  if(!win){alert('Active ventanas emergentes para generar el PDF.');return;}
+  win.document.write(h);win.document.close();
+  setTimeout(()=>{win.focus();win.print();},900);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT — Verificar conexión a Supabase y arrancar
+// ══════════════════════════════════════════════════════════════════
+(async()=>{
+  loading(true,'Conectando con Supabase...');
+  try{
+    const{error}=await sb.from('config').select('key').limit(1);
+    if(error)throw error;
+    loading(false);
+    render();
+  }catch(e){
+    loading(false);
+    document.getElementById('root').innerHTML=`
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px">
+      <div style="background:#fff;border:1px solid #fca5a5;border-radius:12px;padding:36px;max-width:460px;text-align:center;box-shadow:0 2px 14px rgba(26,46,74,.09)">
+        <div style="font-size:36px;margin-bottom:12px">⚠️</div>
+        <h2 style="font-family:'DM Serif Display',serif;font-size:18px;font-weight:400;color:#1a2e4a;margin-bottom:8px">Error de conexión</h2>
+        <p style="font-size:13px;color:#8899aa;margin-bottom:16px">No se pudo conectar a Supabase. Verifique que las credenciales en el archivo <strong>index.html</strong> sean correctas:</p>
+        <code style="display:block;background:#f4f6f9;padding:10px;border-radius:6px;font-size:11px;text-align:left;color:#1a2e4a;margin-bottom:16px">SUPABASE_URL = 'https://xxxx.supabase.co'<br>SUPABASE_ANON = 'eyJxxx...'</code>
+        <p style="font-size:11px;color:#b0bcc8">Encuéntrelas en Supabase → Settings → API</p>
+      </div>
+    </div>`;
+  }
+})();
+</script>
+</body>
+</html>
